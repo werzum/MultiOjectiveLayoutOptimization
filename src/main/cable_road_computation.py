@@ -569,6 +569,9 @@ def generate_tree_anchor_support_trees(
         < end_point.distance(starting_point)
     ]
 
+    # and filter to ensure large enough diameter
+    support_tree_candidates = support_tree_candidates[support_tree_candidates.BHD > 30]
+
     if support_tree_candidates.empty:
         return None
     else:
