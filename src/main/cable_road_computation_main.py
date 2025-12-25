@@ -24,7 +24,7 @@ def generate_possible_lines(
     slope_line: LineString,
     height_gdf: gpd.GeoDataFrame,
 ) -> tuple[DataFrame, dict]:
-    """Compute which lines can be made from road_points to anchor_trees without having an angle greater than max_main_line_slope_deviation
+    """Compute which lines can be made from road_points to target_trees without having an angle greater than max_main_line_slope_deviation
     First, we generate all possible lines between  each point along the road and all head anchors.
     For those which do not deviate more than max_main_line_slope_deviation degrees from the slope line, we compute head anchor support trees along the lines.
     If those are present, we compute triples of tail anchor support trees.
@@ -72,6 +72,12 @@ def generate_possible_lines(
     # add to df and filter empty entries
     line_df = line_df[line_df["end_support_tree"].notnull()]
     print(len(line_df), " after supports trees")
+    debug_plot(
+        overall_trees,
+        target_trees,
+        line_df["line_candidates"],
+        title="A: initial line candidates",
+    )
 
     # find the end_anchor_tree in the list of target trees
     line_df["end_anchor_tree"] = [
@@ -88,6 +94,13 @@ def generate_possible_lines(
         )
         for index, row in line_df.iterrows()
     ]
+    debug_plot(
+        overall_trees,
+        target_trees,
+        line_df["line_candidates"],
+        end_support_trees=line_df["end_anchor_tree"],
+        title="A: initial line candidates",
+    )
 
     # filter the triple angles for good supports
     (
@@ -138,3 +151,44 @@ def generate_possible_lines(
     )
 
     return line_df, start_point_dict
+
+
+import matplotlib.pyplot as plt
+
+
+def debug_plot(
+    overall_trees,
+    target_trees,
+    line_candidates,
+    end_support_trees=None,
+    title="debug",
+):
+    fig, ax = plt.subplots(figsize=(10, 10))
+
+    # overall trees
+    overall_trees.plot(ax=ax, color="green", markersize=10, label="overall")
+
+    # target trees
+    target_trees.plot(ax=ax, color="red", markersize=10, label="target")
+
+    # line candidates
+    for i, line in enumerate(line_candidates):
+        xs, ys = line.xy
+        ax.plot(xs, ys, "k--", alpha=0.3)
+        ax.text(xs[1], ys[1], f"L{i}", fontsize=6)
+
+    # support trees (optional)
+    if end_support_trees is not None:
+        for i, tree in enumerate(end_support_trees):
+            if tree is None:
+                continue
+            x, y = tree.geometry.coords[0]
+            ax.scatter(x, y, c="blue", s=40)
+            ax.text(x, y, f"S{i}", fontsize=6, color="blue")
+
+    ax.set_title(title)
+    ax.set_aspect("equal")
+    ax.legend()
+
+    fig.canvas.draw_idle()
+    plt.pause(0.001)

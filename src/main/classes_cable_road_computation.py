@@ -336,11 +336,11 @@ class forest_area:
             tree_gdf, extra_geometry_gpd.loc["inner_forest"].geometry
         )
 
-        self.harvesteable_trees_gdf = pd.concat([target_trees_gdf, inner_forest_gdf])
-
         # filter the anchor and target trees for a BHD of 30cm or larger
         self.anchor_trees_gdf = anchor_trees_gdf[anchor_trees_gdf["BHD"] >= 30]
         self.target_trees_gdf = target_trees_gdf[target_trees_gdf["BHD"] >= 30]
+
+        self.harvesteable_trees_gdf = pd.concat([target_trees_gdf, inner_forest_gdf])
 
         # set the slope
         slope_degree = 29

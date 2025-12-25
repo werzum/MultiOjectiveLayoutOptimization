@@ -19,10 +19,7 @@ from src.main import geometry_operations, plotting_3d
 def create_trees_and_lines_traces(forest_area_3, transparent_line):
     # create a trace for the trees
     xs, ys = zip(
-        *[
-            (row.xy[0][0], row.xy[1][0])
-            for row in forest_area_3.harvesteable_trees_gdf.geometry
-        ]
+        *[(row.xy[0][0], row.xy[1][0]) for row in forest_area_3.tree_gdf.geometry]
     )
     trees = go.Scatter(
         x=xs,
