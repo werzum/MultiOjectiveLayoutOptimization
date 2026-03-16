@@ -11,7 +11,6 @@ from random import random
 import plotly.graph_objects as go
 import plotly.express as px
 from ipywidgets.widgets import Button, Dropdown, Textarea, Layout
-from torch import prod
 
 from src.main import geometry_operations, plotting_3d
 
