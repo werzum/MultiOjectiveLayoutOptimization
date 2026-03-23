@@ -164,7 +164,7 @@ def distance_between_3d_points(point1, point2):
 
 
 def distance_between_points_from_origin(
-    points: np.ndarray, origin: np.ndarray
+    points: np.ndarray, origin: Point
 ) -> np.ndarray:
     """Compute the distance between a list of points and an origin.
     Args:
@@ -174,7 +174,7 @@ def distance_between_points_from_origin(
         np.ndarray: Array of distances
     """
 
-    return np.sqrt(np.sum((points - origin) ** 2, 1))
+    return np.sqrt(np.sum((points - origin.coords) ** 2, 1))
 
 
 def create_xy_orthogonal_vector(point: classes_geometry_objects.Point_3D):

@@ -2,6 +2,7 @@ from calendar import c
 from functools import partial
 import re
 from turtle import up
+import ipywidgets
 from matplotlib.axis import XAxis, YAxis
 import pandas as pd
 import numpy as np
@@ -11,7 +12,6 @@ from random import random
 import plotly.graph_objects as go
 import plotly.express as px
 from ipywidgets.widgets import Button, Dropdown, Textarea, Layout
-from torch import prod
 
 from src.main import geometry_operations, plotting_3d
 
@@ -873,7 +873,6 @@ def interactive_cr_selection(
 
         # reset the scatterplot
         scatterplot.data = []
-
         # get the new traces
         new_figure_traces = plotting_3d.plot_all_cable_roads(
             forest_area_3.height_gdf, forest_area_3.line_gdf.iloc[current_indices]
@@ -993,7 +992,6 @@ def interactive_cr_selection(
         )
 
     buttons = list(create_buttons(layout_3d_scatter_plot))
-    print("test")
 
     return (
         interactive_layout,

@@ -26,7 +26,6 @@ def decrement_tension_until_towers_anchors_supports_hold(
             this_cable_road, max_supported_forces, anchor_triplets, height_gdf
         )
     )
-    print("Tower and anchors hold:", tower_and_anchors_hold)
     if tower_and_anchors_hold:
         if this_cable_road.supported_segments:
             for current_segment, next_segment in pairwise(
@@ -103,8 +102,6 @@ def compute_required_supports(
     else:
         raise ValueError("No line or segment given")
 
-    print("Tension to begin with is", this_cable_road.s_current_tension)
-
     # set supports_Hold to false if we have supports and need to check them, else set to true
     tower_and_anchors_hold = False
     supports_hold = False if this_cable_road.count_segments() > 0 else True
@@ -127,12 +124,9 @@ def compute_required_supports(
         )
 
         if this_cable_road.s_current_tension < min_cr_tension:
-            print("CR tension is too low with ", this_cable_road.s_current_tension)
             return return_failed()
 
     this_cable_road.anchors_hold = True
-
-    print("After the iterative process it is now", this_cable_road.s_current_tension)
 
     # check if it feasible to continue or to return if we already have a successful line
     return_early = evaluate_cr_collisions(this_cable_road)
@@ -142,7 +136,6 @@ def compute_required_supports(
 
     # enter the next recursive loop if not creating supports
     else:
-        print("Need to find supports")
         # get the distance candidates
         distance_candidates = setup_support_candidates(this_cable_road, overall_trees)
 
@@ -174,9 +167,6 @@ def compute_required_supports(
                 return return_sucessful(this_cable_road)
 
         # if we passed through the loop without finding suitable candidates, set the first candidate as support and find sub-supports recursively
-        print(
-            "didnt find suitable candidate - select first candidate as support and iterate"
-        )
 
         # check if any of the left supports works and add it to the current CR
         this_cable_road = set_up_recursive_supports(
@@ -188,7 +178,6 @@ def compute_required_supports(
 
         # if none were found, return failed - none of the intermediate supports work.
         if not this_cable_road:
-            print("no suitable supports found")
             return return_failed()
 
         # test for collisions left and right - enter the recursive loop to compute subsupports
@@ -368,11 +357,9 @@ def check_segment_for_feasibility(
         and end_segment.cable_road.no_collisions
         and support_withstands_tension
     ):
-        print("found viable sub-config")
         this_cable_road.supported_segments.extend((start_segment, end_segment))
         return return_sucessful(this_cable_road)
     else:
-        print("segment is infesible")
         return False
 
 
@@ -383,22 +370,16 @@ def evaluate_cr_collisions(
     mechanical_computations.check_if_no_collisions_cable_road(this_cable_road)
 
     if this_cable_road.count_segments() and this_cable_road.count_segments() < 4:
-        print("more than 4 supports not possible")
         return return_failed()
 
     if this_cable_road.no_collisions:
-        print("Found no collisions")
         return return_sucessful(this_cable_road)
     else:
-        print("Found collisions")
         return return_failed()
 
 
 def candidate_is_too_close_to_anchor(support_segment) -> bool:
     if len(support_segment.cable_road.points_along_line) < 4:
-        print(
-            "candidate too close to anchor, skipping in check if no coll overall line sideways CR"
-        )
         return True
     return False
 
@@ -423,7 +404,6 @@ def check_support_tension_and_collision(
             start_segment, end_segment
         )
     )
-    print("Support withstands tension:", support_withstands_tension)
 
     # check if we have no collisions
     mechanical_computations.check_if_no_collisions_cable_road(start_segment.cable_road)
@@ -431,8 +411,6 @@ def check_support_tension_and_collision(
     no_collisions = (
         start_segment.cable_road.no_collisions and end_segment.cable_road.no_collisions
     )
-    print("No collisions:", no_collisions)
-
     return support_withstands_tension, no_collisions
 
 
@@ -609,8 +587,6 @@ def setup_support_candidates(
     Returns:
         gpd.GeoDataFrame: The candidate trees for the support
     """
-    print("Setting up support candidates")
-
     # 1. get the point of contact
     lowest_point_height = min(this_cable_road.sloped_line_to_floor_distances)
     sloped_line_to_floor_distances_index = int(

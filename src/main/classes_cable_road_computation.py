@@ -146,17 +146,25 @@ class Cable_Road:
 
         self.initialize_line_tension(number_sub_segments, pre_tension)
 
+    # @property
+    # def line_to_floor_distances(self):
+    #     return np.asarray(
+    #         [
+    #             geometry_utilities.lineseg_dist(
+    #                 point,
+    #                 self.start_support.xyz_location.xyz,
+    #                 self.end_support.xyz_location.xyz,
+    #             )
+    #             for point in self.floor_points
+    #         ]
+    #     )
+
     @property
     def line_to_floor_distances(self):
-        return np.asarray(
-            [
-                geometry_utilities.lineseg_dist(
-                    point,
-                    self.start_support.xyz_location.xyz,
-                    self.end_support.xyz_location.xyz,
-                )
-                for point in self.floor_points
-            ]
+        return vertical_line_to_floor_distances(
+            self.floor_points,
+            self.start_support.xyz_location.xyz,
+            self.end_support.xyz_location.xyz,
         )
 
     @property
@@ -310,6 +318,36 @@ def initialize_cable_road_with_supports(
 def load_cable_road(line_gdf: gpd.GeoDataFrame, index: int) -> Cable_Road:
     """Helper function to abstract setting up a sample cable road from the line_gdf"""
     return line_gdf.iloc[index]["Cable Road Object"]
+
+
+def vertical_line_to_floor_distances(floor_points, start_xyz, end_xyz):
+    """Redo of cable road to ground distance"""
+    floor_points = np.asarray(floor_points, dtype=float)
+    start_xyz = np.asarray(start_xyz, dtype=float)
+    end_xyz = np.asarray(end_xyz, dtype=float)
+
+    start_xy = start_xyz[:2]
+    end_xy = end_xyz[:2]
+
+    line_xy = end_xy - start_xy
+    line_len_sq = np.dot(line_xy, line_xy)
+
+    if line_len_sq == 0:
+        raise ValueError("Start and end supports have identical XY coordinates.")
+
+    # projection parameter of each floor point onto the support-to-support line in XY
+    t = np.dot(floor_points[:, :2] - start_xy, line_xy) / line_len_sq
+
+    # optionally clamp to segment [0, 1]
+    t = np.clip(t, 0.0, 1.0)
+
+    # straight cable/support line z at projected station
+    z_line = start_xyz[2] + t * (end_xyz[2] - start_xyz[2])
+
+    # vertical distance straight down to ground
+    z_ground = floor_points[:, 2]
+
+    return z_line - z_ground
 
 
 class forest_area:
